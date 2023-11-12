@@ -1,6 +1,9 @@
 using Catalog.Host.Data;
 using Catalog.Host.Data.Entities;
 using Catalog.Host.Repositories.Interfaces;
+using Catalog.Host.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using System.Xml.Linq;
 
 namespace Catalog.Host.Repositories;
 
@@ -35,7 +38,7 @@ public class CatalogItemRepository : ICatalogItemRepository
 
     public async Task<int?> Add(string name, string description, decimal price, int availableStock, int catalogBrandId, int catalogTypeId, string pictureFileName)
     {
-        var item1 = new CatalogItem
+        var item = await _dbContext.AddAsync(new CatalogItem
         {
             CatalogBrandId = catalogBrandId,
             CatalogTypeId = catalogTypeId,
@@ -43,11 +46,48 @@ public class CatalogItemRepository : ICatalogItemRepository
             Name = name,
             PictureFileName = pictureFileName,
             Price = price
-        };
-        var item = await _dbContext.AddAsync(item1);
+        });
 
         await _dbContext.SaveChangesAsync();
 
         return item.Entity.Id;
+    }
+
+    public async Task<CatalogItem?> DeleteAsync(int id)
+    {
+        var item = await _dbContext.CatalogItems.FindAsync(id);
+
+        if (item is null)
+        {
+            return null;
+        }
+
+        _dbContext.CatalogItems.Remove(item);
+        await _dbContext.SaveChangesAsync();
+
+        return item;
+    }
+
+    public async Task<CatalogItem?> UpdateAsync(int id, string name, string description, decimal price, int availableStock, int catalogBrandId, int catalogTypeId, string pictureFileName)
+    {
+        var catalogItem = await _dbContext.CatalogItems.FindAsync(id);
+
+        if (catalogItem is null)
+        {
+            return null;
+        }
+
+        catalogItem.Name = name;
+        catalogItem.Description = description;
+        catalogItem.Price = price;
+        catalogItem.AvailableStock = availableStock;
+        catalogItem.CatalogBrandId = catalogBrandId;
+        catalogItem.CatalogTypeId = catalogTypeId;
+        catalogItem.PictureFileName = pictureFileName;
+
+        _dbContext.CatalogItems.Update(catalogItem);
+        await _dbContext.SaveChangesAsync();
+
+        return catalogItem;
     }
 }

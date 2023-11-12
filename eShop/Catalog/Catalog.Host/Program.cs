@@ -1,11 +1,10 @@
 using Catalog.Host.Configurations;
+using Catalog.Host.Controllers;
 using Catalog.Host.Data;
 using Catalog.Host.Repositories;
 using Catalog.Host.Repositories.Interfaces;
 using Catalog.Host.Services;
 using Catalog.Host.Services.Interfaces;
-using Infrastructure.Services;
-using Infrastructure.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var configuration = GetConfiguration();
@@ -16,9 +15,17 @@ builder.Services.Configure<CatalogConfig>(configuration);
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(Program));
 
+builder.Services.AddTransient<ICatalogBffRepository, CatalogBffRepository>();
+builder.Services.AddTransient<ICatalogBffService, CatalogBffService>();
+
 builder.Services.AddTransient<ICatalogItemRepository, CatalogItemRepository>();
-builder.Services.AddTransient<ICatalogService, CatalogService>();
 builder.Services.AddTransient<ICatalogItemService, CatalogItemService>();
+
+builder.Services.AddTransient<ICatalogBrandRepository, CatalogBrandRepository>();
+builder.Services.AddTransient<ICatalogBrandService, CatalogBrandService>();
+
+builder.Services.AddTransient<ICatalogTypeRepository, CatalogTypeRepository>();
+builder.Services.AddTransient<ICatalogTypeService, CatalogTypeService>();
 
 builder.Services.AddDbContextFactory<ApplicationDbContext>(opts => opts.UseNpgsql(configuration["ConnectionString"]));
 builder.Services.AddScoped<IDbContextWrapper<ApplicationDbContext>, DbContextWrapper<ApplicationDbContext>>();
